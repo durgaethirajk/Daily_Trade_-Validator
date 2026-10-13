@@ -171,7 +171,7 @@ renderJournal();
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 // Automatic harmonic screenshot analysis. Requires a deployed secure backend endpoint.
-const HARMONIC_API_ENDPOINT = ''; // Set to your deployed backend URL, e.g. https://your-service.example/analyze
+const HARMONIC_API_ENDPOINT = 'https://daily-trade-validator.onrender.com/analyze';// Set to your deployed backend URL, e.g. https://your-service.example/analyze
 let autoHarmonicImageUrl = '';
 $('autoHarmonicFile')?.addEventListener('change', e => {
   const file=e.target.files?.[0]; if(!file)return;
