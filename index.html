@@ -21,7 +21,7 @@ main{max-width:780px;margin:auto;padding:18px 14px 40px}.top{display:flex;justif
 <body><main>
 <header class="top"><div><div class="eyebrow">DISCIPLINE OVER PREDICTION</div><h1>Daily Trade Validator</h1><div class="sub">Nifty 50 · Sensex · 5-minute setup checklist</div></div><div class="pill">MANUAL MVP · OFFLINE</div></header>
 <div class="notice">Manual mode: enter values from completed candles only. This app does not receive live prices, inspect screenshots, or place orders. A checklist result is not a prediction or a guarantee.</div>
-<nav class="tabs"><button class="tab active" data-tab="validate">Validate</button><button class="tab" data-tab="manage">Open trade</button><button class="tab" data-tab="journal">Journal</button></nav>
+<nav class="tabs"><button class="tab active" data-tab="validate">Validate</button><button class="tab" data-tab="manage">Open trade</button><button class="tab" data-tab="harmonics">Harmonics</button><button class="tab" data-tab="journal">Journal</button></nav>
 <section id="validate">
 <div class="panel"><h2>01 · Trade setup</h2><div class="grid">
 <div class="field"><label>Instrument</label><select id="instrument"><option>Nifty 50</option><option>Sensex</option></select></div>
@@ -67,7 +67,21 @@ main{max-width:780px;margin:auto;padding:18px 14px 40px}.top{display:flex;justif
 <label class="check"><input id="mTime" type="checkbox"> End-of-day / time exit rule reached</label>
 </div><button class="btn" id="monitorBtn">Review open trade</button><div id="monitorResult" class="result hidden" aria-live="polite"></div><button class="btn secondary" id="saveMonitor">Save review to journal</button></div>
 </section>
-<section id="journal" class="hidden"><div class="panel"><h2>Trade journal</h2><div class="metrics"><div class="metric"><small>Records</small><strong id="jCount">0</strong></div><div class="metric"><small>Realized P&amp;L</small><strong id="jPnl">₹0</strong></div><div class="metric"><small>Rule violations</small><strong id="jViolations">0</strong></div></div><div id="journalList"></div><button class="btn secondary" id="exportBtn">Export journal CSV</button><button class="btn danger" id="clearBtn">Clear all local data</button><div class="mini" style="margin-top:10px">Records are stored only in this browser on this device. Export regularly; clearing Safari website data may remove them.</div></div></section>
+
+<section id="harmonics" class="hidden"><div class="panel"><h2>Harmonic Pattern Detector</h2>
+<div class="mini">Enter five confirmed swing points in chronological order: X → A → B → C → D. This manual detector checks approximate Fibonacci ratios for Gartley, Bat, Butterfly and Crab patterns. It does not discover swing points automatically.</div>
+<div class="grid" style="margin-top:12px">
+<div class="field"><label>X swing price</label><input id="hx" type="number" step=".05" placeholder="First pivot"></div>
+<div class="field"><label>A swing price</label><input id="ha" type="number" step=".05" placeholder="Second pivot"></div>
+<div class="field"><label>B swing price</label><input id="hb" type="number" step=".05" placeholder="Third pivot"></div>
+<div class="field"><label>C swing price</label><input id="hc" type="number" step=".05" placeholder="Fourth pivot"></div>
+<div class="field"><label>D swing price</label><input id="hd" type="number" step=".05" placeholder="Potential reversal pivot"></div>
+<div class="field"><label>Ratio tolerance</label><select id="htol"><option value="3">3% · Strict</option><option value="5" selected>5% · Balanced</option><option value="8">8% · Loose</option></select></div>
+</div><button class="btn" id="harmonicBtn">Detect harmonic pattern</button>
+<div id="harmonicResult" class="result hidden" aria-live="polite"></div>
+<div class="notice" style="margin-top:12px">A pattern match is not an entry signal. Wait for D-point rejection, a completed candle, and your BOS + FVG + VWAP confirmation.</div>
+</div></section>
+\n<section id="journal" class="hidden"><div class="panel"><h2>Trade journal</h2><div class="metrics"><div class="metric"><small>Records</small><strong id="jCount">0</strong></div><div class="metric"><small>Realized P&amp;L</small><strong id="jPnl">₹0</strong></div><div class="metric"><small>Rule violations</small><strong id="jViolations">0</strong></div></div><div id="journalList"></div><button class="btn secondary" id="exportBtn">Export journal CSV</button><button class="btn danger" id="clearBtn">Clear all local data</button><div class="mini" style="margin-top:10px">Records are stored only in this browser on this device. Export regularly; clearing Safari website data may remove them.</div></div></section>
 <div class="footer">Educational decision support only · Options can lose value rapidly. Verify every input. No brokerage connection or automatic order execution.</div>
 </main>
 <script>
@@ -75,7 +89,7 @@ const $=id=>document.getElementById(id);
 let latestValidation=null, latestMonitor=null;
 const readNum=id=>{const v=$(id).value.trim();return v===''?null:Number(v)};
 const money=v=>v==null||!Number.isFinite(v)?'—':'₹'+v.toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});
-function switchTab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));['validate','manage','journal'].forEach(id=>$(id).classList.toggle('hidden',id!==name));if(name==='journal')renderJournal()}
+function switchTab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));['validate','manage','harmonics','journal'].forEach(id=>$(id).classList.toggle('hidden',id!==name));if(name==='journal')renderJournal()}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 function getSetup(){
  const side=$('side').value, close=readNum('close'), hi=readNum('orHigh'),lo=readNum('orLow'),vwap=readNum('vwap'),spot=readNum('spot'),entry=readNum('entry'),sl=readNum('sl'),qty=readNum('qty'),fl=readNum('fvgLow'),fh=readNum('fvgHigh');
@@ -123,5 +137,32 @@ function renderJournal(){
 $('exportBtn').addEventListener('click',()=>{const a=JSON.parse(localStorage.getItem('dtv-journal')||'[]');const cols=['id','type','created','instrument','side','status','entry','sl','qty','pnl','notes','conflicts','flags'];const esc=v=>'"'+String(Array.isArray(v)?v.join('; '):v??'').replace(/"/g,'""')+'"';const csv=[cols.join(','),...a.map(r=>cols.map(c=>esc(r[c])).join(','))].join('\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));const link=document.createElement('a');link.href=url;link.download='trade-journal.csv';link.click();URL.revokeObjectURL(url)});
 $('clearBtn').addEventListener('click',()=>{if(confirm('Delete all Daily Trade Validator records stored in this browser? This cannot be undone.')){localStorage.removeItem('dtv-journal');renderJournal()}});
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+
+function ratioNear(v,t,tol){return Math.abs(v-t)<=Math.abs(t)*tol}
+function ratioRange(v,lo,hi,tol){return v>=lo*(1-tol)&&v<=hi*(1+tol)}
+function detectHarmonic(){
+ const p=['hx','ha','hb','hc','hd'].map(readNum), out=$('harmonicResult');out.classList.remove('hidden');
+ if(p.some(v=>v===null||!Number.isFinite(v)||v<=0)){out.innerHTML='<div class="status wait">WAIT — ENTER ALL FIVE PIVOTS</div><ul class="reasons"><li>Enter positive X, A, B, C and D prices.</li></ul>';return;}
+ const [X,A,B,C,D]=p, xa=Math.abs(A-X), ab=Math.abs(B-A), bc=Math.abs(C-B), cd=Math.abs(D-C), ad=Math.abs(D-A);
+ if([xa,ab,bc,cd].some(v=>v===0)){out.innerHTML='<div class="status no">INVALID SWING POINTS</div><ul class="reasons"><li>Each consecutive swing must have a different price.</li></ul>';return;}
+ const tol=Number($('htol').value)/100, r={ab:ab/xa,bc:bc/ab,cd:cd/bc,ad:ad/xa};
+ const bull=X<A&&B<X&&C>B&&D<C, bear=X>A&&B>X&&C<B&&D>C;
+ const direction=bull?'Bullish':bear?'Bearish':'Unclear / invalid swing sequence';
+ const pats=[
+ {name:'Gartley',ab:[.618,.618],bc:[.382,.886],cd:[1.272,1.618],ad:[.786,.786]},
+ {name:'Bat',ab:[.382,.5],bc:[.382,.886],cd:[1.618,2.618],ad:[.886,.886]},
+ {name:'Butterfly',ab:[.786,.786],bc:[.382,.886],cd:[1.618,2.618],ad:[1.27,1.27]},
+ {name:'Crab',ab:[.382,.618],bc:[.382,.886],cd:[2.24,3.618],ad:[1.618,1.618]}
+ ].map(q=>{const c=[
+ q.ab[0]===q.ab[1]?ratioNear(r.ab,q.ab[0],tol):ratioRange(r.ab,q.ab[0],q.ab[1],tol),
+ ratioRange(r.bc,q.bc[0],q.bc[1],tol),ratioRange(r.cd,q.cd[0],q.cd[1],tol),
+ q.ad[0]===q.ad[1]?ratioNear(r.ad,q.ad[0],tol):ratioRange(r.ad,q.ad[0],q.ad[1],tol)];
+ return {...q,c,ok:c.every(Boolean)};});
+ const matches=pats.filter(q=>q.ok);
+ const list=pats.map(q=>`<li><b>${q.name}:</b> ${q.ok?'ratio match':'no match'} — AB/XA ${q.c[0]?'✓':'✗'}, BC/AB ${q.c[1]?'✓':'✗'}, CD/BC ${q.c[2]?'✓':'✗'}, AD/XA ${q.c[3]?'✓':'✗'}</li>`).join('');
+ out.innerHTML=`<div class="status ${matches.length?'wait':'no'}">${matches.length?'POTENTIAL '+matches.map(q=>q.name.toUpperCase()).join(' / ')+' PATTERN':'NO CLOSE PATTERN MATCH'}</div><div class="mini" style="margin-top:6px">Swing shape: <b>${direction}</b>. Ratio matching alone does not confirm a trade.</div><div class="metrics"><div class="metric"><small>AB / XA</small><strong>${r.ab.toFixed(3)}</strong></div><div class="metric"><small>BC / AB</small><strong>${r.bc.toFixed(3)}</strong></div><div class="metric"><small>CD / BC</small><strong>${r.cd.toFixed(3)}</strong></div></div><div class="metric" style="margin-top:8px"><small>AD / XA</small><strong>${r.ad.toFixed(3)}</strong></div><ul class="reasons">${list}<li>Confirm the D-point reversal and keep BOS, FVG retracement, VWAP and candle-close checks separate.</li></ul>`;
+}
+$('harmonicBtn').addEventListener('click',detectHarmonic);
+
 renderJournal();
 </script></body></html>
