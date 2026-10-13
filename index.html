@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101722">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trade Validator">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Daily Trade Validator</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1119;--panel:#131d29;--panel2:#192636;--text:#edf3fa;--muted:#9aabbe;--line:#2a3a4c;--green:#41d69a;--red:#ff6d7d;--amber:#ffcc66;--blue:#79b8ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:780px;margin:auto;padding:18px 14px 40px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}.eyebrow{color:var(--green);font-size:11px;letter-spacing:1.6px;font-weight:800}.top h1{font-size:25px;margin:4px 0}.sub{color:var(--muted);font-size:13px;line-height:1.45}.pill{border:1px solid var(--line);padding:7px 10px;border-radius:999px;color:var(--muted);font-size:11px;white-space:nowrap}
+.tabs{display:flex;gap:7px;margin:15px 0;position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:5}.tab{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:11px 7px;border-radius:12px;font-weight:700}.tab.active{background:#20354a;color:white;border-color:#416a8e}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:15px;margin:12px 0}.panel h2{font-size:16px;margin:0 0 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:12px;color:var(--muted)}input,select,textarea{width:100%;background:#0d1520;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:12px;font:inherit;min-height:44px}input[type=checkbox]{width:20px;min-height:20px;accent-color:var(--green)}.checks{display:grid;grid-template-columns:1fr 1fr;gap:10px}.check{display:flex;align-items:center;gap:9px;background:#0d1520;border:1px solid var(--line);padding:12px;border-radius:10px;font-size:13px}.wide{grid-column:1/-1}.btn{border:0;border-radius:12px;padding:13px 15px;font-weight:800;font-size:14px;background:var(--green);color:#07150f;width:100%;margin-top:12px}.btn.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text)}.btn.danger{background:#512631;color:#ffe6e9}.result{padding:16px;border-radius:14px;border:1px solid var(--line);background:#0d1520;margin-top:12px}.status{font-size:20px;font-weight:900;letter-spacing:.3px}.status.valid{color:var(--green)}.status.wait{color:var(--amber)}.status.no{color:var(--red)}.reasons{color:var(--muted);line-height:1.55;padding-left:18px;margin:10px 0 0}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.metric{background:#0d1520;border-radius:10px;padding:10px}.metric small{display:block;color:var(--muted);font-size:11px}.metric strong{display:block;margin-top:5px;font-size:17px}.hidden{display:none!important}.muted{color:var(--muted)}.trade{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px}.tradehead{display:flex;justify-content:space-between;gap:8px;font-weight:800}.trade p{font-size:12px;color:var(--muted);line-height:1.5}.tag{font-size:11px;padding:4px 7px;border-radius:6px;background:#20354a;color:var(--blue)}.footer{color:#8292a5;font-size:11px;line-height:1.5;text-align:center;margin-top:22px}.notice{background:#322b1b;border:1px solid #66552d;color:#ffe2a0;padding:11px;border-radius:10px;font-size:12px;line-height:1.5}.mini{font-size:12px;color:var(--muted);line-height:1.5}@media(max-width:390px){.grid{grid-template-columns:1fr 1fr}.top h1{font-size:22px}.pill{display:none}}
+</style>
+</head>
+<body><main>
+<header class="top"><div><div class="eyebrow">DISCIPLINE OVER PREDICTION</div><h1>Daily Trade Validator</h1><div class="sub">Nifty 50 · Sensex · 5-minute setup checklist</div></div><div class="pill">MANUAL MVP · OFFLINE</div></header>
+<div class="notice">Manual mode: enter values from completed candles only. This app does not receive live prices, inspect screenshots, or place orders. A checklist result is not a prediction or a guarantee.</div>
+<nav class="tabs"><button class="tab active" data-tab="validate">Validate</button><button class="tab" data-tab="manage">Open trade</button><button class="tab" data-tab="journal">Journal</button></nav>
+<section id="validate">
+<div class="panel"><h2>01 · Trade setup</h2><div class="grid">
+<div class="field"><label>Instrument</label><select id="instrument"><option>Nifty 50</option><option>Sensex</option></select></div>
+<div class="field"><label>Option side</label><select id="side"><option value="CE">CE · bullish</option><option value="PE">PE · bearish</option></select></div>
+<div class="field"><label>Index spot price</label><input id="spot" type="number" step="0.05" placeholder="e.g. 22500"></div>
+<div class="field"><label>Option entry premium (₹)</label><input id="entry" type="number" step="0.05" placeholder="e.g. 120"></div>
+<div class="field"><label>Option stop-loss premium (₹)</label><input id="sl" type="number" step="0.05" placeholder="e.g. 100"></div>
+<div class="field"><label>Quantity (units)</label><input id="qty" type="number" step="1" min="1" placeholder="e.g. 75"></div>
+<div class="field"><label>Opening range high</label><input id="orHigh" type="number" step="0.05" placeholder="9:15–10:15 high"></div>
+<div class="field"><label>Opening range low</label><input id="orLow" type="number" step="0.05" placeholder="9:15–10:15 low"></div>
+<div class="field"><label>Latest completed 5m close</label><input id="close" type="number" step="0.05" placeholder="index close"></div>
+<div class="field"><label>Latest 5m candle high</label><input id="cHigh" type="number" step="0.05" placeholder="candle high"></div>
+<div class="field"><label>Latest 5m candle low</label><input id="cLow" type="number" step="0.05" placeholder="candle low"></div>
+<div class="field"><label>VWAP value</label><input id="vwap" type="number" step="0.05" placeholder="index VWAP"></div>
+<div class="field"><label>FVG zone low</label><input id="fvgLow" type="number" step="0.05" placeholder="gap low"></div>
+<div class="field"><label>FVG zone high</label><input id="fvgHigh" type="number" step="0.05" placeholder="gap high"></div>
+</div></div>
+<div class="panel"><h2>02 · Confirm the setup</h2><div class="checks">
+<label class="check"><input id="bos" type="checkbox"> BOS confirmed</label>
+<label class="check"><input id="fvg" type="checkbox"> Directional FVG identified</label>
+<label class="check"><input id="retrace" type="checkbox"> Retracement into FVG</label>
+<label class="check"><input id="rejection" type="checkbox"> Rejection/confirmation candle</label>
+<label class="check"><input id="closed" type="checkbox"> Candle fully closed</label>
+<label class="check"><input id="fake" type="checkbox"> Breakout failed / closed back inside</label>
+</div><div class="field" style="margin-top:12px"><label>Notes / reason for entry</label><textarea id="notes" rows="2" placeholder="What supports this trade?"></textarea></div>
+<button class="btn" id="validateBtn">Validate setup</button>
+<div id="result" class="result hidden" aria-live="polite"></div>
+<button class="btn secondary" id="saveSetup">Save setup to journal</button>
+</div>
+</section>
+<section id="manage" class="hidden">
+<div class="panel"><h2>Open trade monitor</h2><div class="mini">Use the option premium for P&amp;L and the index chart for setup invalidation. Enter the current premium manually after each completed candle or whenever you review the trade.</div>
+<div class="grid" style="margin-top:12px">
+<div class="field"><label>Position</label><select id="mSide"><option value="BUY">Long option (buy)</option><option value="SELL">Short option (sell)</option></select></div>
+<div class="field"><label>Entry premium (₹)</label><input id="mEntry" type="number" step=".05"></div>
+<div class="field"><label>Current premium (₹)</label><input id="mCurrent" type="number" step=".05"></div>
+<div class="field"><label>Stop-loss premium (₹)</label><input id="mSL" type="number" step=".05"></div>
+<div class="field"><label>Target premium (₹)</label><input id="mTarget" type="number" step=".05"></div>
+<div class="field"><label>Quantity (units)</label><input id="mQty" type="number" min="1" step="1"></div>
+</div><div class="checks" style="margin-top:12px">
+<label class="check"><input id="mInvalid" type="checkbox"> Index setup invalidated</label>
+<label class="check"><input id="mVWAP" type="checkbox"> VWAP now conflicts</label>
+<label class="check"><input id="mTime" type="checkbox"> End-of-day / time exit rule reached</label>
+</div><button class="btn" id="monitorBtn">Review open trade</button><div id="monitorResult" class="result hidden" aria-live="polite"></div><button class="btn secondary" id="saveMonitor">Save review to journal</button></div>
+</section>
+<section id="journal" class="hidden"><div class="panel"><h2>Trade journal</h2><div class="metrics"><div class="metric"><small>Records</small><strong id="jCount">0</strong></div><div class="metric"><small>Realized P&amp;L</small><strong id="jPnl">₹0</strong></div><div class="metric"><small>Rule violations</small><strong id="jViolations">0</strong></div></div><div id="journalList"></div><button class="btn secondary" id="exportBtn">Export journal CSV</button><button class="btn danger" id="clearBtn">Clear all local data</button><div class="mini" style="margin-top:10px">Records are stored only in this browser on this device. Export regularly; clearing Safari website data may remove them.</div></div></section>
+<div class="footer">Educational decision support only · Options can lose value rapidly. Verify every input. No brokerage connection or automatic order execution.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let latestValidation=null, latestMonitor=null;
+const readNum=id=>{const v=$(id).value.trim();return v===''?null:Number(v)};
+const money=v=>v==null||!Number.isFinite(v)?'—':'₹'+v.toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});
+function switchTab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));['validate','manage','journal'].forEach(id=>$(id).classList.toggle('hidden',id!==name));if(name==='journal')renderJournal()}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+function getSetup(){
+ const side=$('side').value, close=readNum('close'), hi=readNum('orHigh'),lo=readNum('orLow'),vwap=readNum('vwap'),spot=readNum('spot'),entry=readNum('entry'),sl=readNum('sl'),qty=readNum('qty'),fl=readNum('fvgLow'),fh=readNum('fvgHigh');
+ const missing=[];[['Index spot','spot'],['Opening range high','orHigh'],['Opening range low','orLow'],['5m close','close'],['VWAP','vwap'],['Option entry','entry'],['Option stop-loss','sl'],['quantity','qty']].forEach(([n,id])=>{if(readNum(id)===null)missing.push(n)});
+ const breakout=close!==null&&hi!==null&&lo!==null&&(side==='CE'?close>hi:close<lo);
+ const vwapAligned=close!==null&&vwap!==null&&(side==='CE'?close>vwap:close<vwap);
+ const fvgZoneValid=fl!==null&&fh!==null&&fl<fh;
+ const fvgTouched=fvgZoneValid&&readNum('cLow')!==null&&readNum('cHigh')!==null&&readNum('cLow')<=fh&&readNum('cHigh')>=fl;
+ const checked={bos:$('bos').checked,fvg:$('fvg').checked,retrace:$('retrace').checked,rejection:$('rejection').checked,closed:$('closed').checked,fake:$('fake').checked};
+ const conflicts=[]; if(!breakout)conflicts.push(side==='CE'?'No completed close above opening-range high':'No completed close below opening-range low');if(!vwapAligned)conflicts.push('Price and VWAP are not aligned with direction');if(!checked.bos)conflicts.push('BOS not confirmed');if(!checked.fvg||!fvgZoneValid)conflicts.push('Directional FVG / valid zone not confirmed');if(!checked.retrace)conflicts.push('FVG retracement not confirmed');if(!checked.rejection)conflicts.push('No rejection/confirmation candle');if(!checked.closed)conflicts.push('Latest candle is not confirmed closed');if(checked.fake)conflicts.push('Failed breakout flag is on');if(fvgTouched===false&&fvgZoneValid)conflicts.push('Entered candle range does not overlap the FVG zone');
+ const risk=entry!==null&&sl!==null?Math.abs(entry-sl):null; const target=entry!==null&&sl!==null?(side==='CE'||side==='PE'?entry+risk:null):null;
+ const invalidRisk=entry!==null&&sl!==null&&(entry<=0||sl<=0||((side==='CE'||side==='PE')&&sl>=entry));
+ const status=missing.length?'WAIT':(conflicts.length===0&&!invalidRisk?'VALID SETUP':'NO TRADE');
+ return {instrument:$('instrument').value,side,spot,entry,sl,qty,close,hi,lo,vwap,fl,fh,missing,conflicts,checked,breakout,vwapAligned,risk,target,invalidRisk,status,notes:$('notes').value,created:new Date().toISOString()};
+}
+function validate(){
+ const s=getSetup(); latestValidation=s; const el=$('result');el.classList.remove('hidden');
+ const cls=s.status==='VALID SETUP'?'valid':s.status==='WAIT'?'wait':'no';
+ const riskAmt=s.risk!==null&&s.qty!==null?s.risk*s.qty:null;
+ const target=s.target!==null?s.target:null;
+ el.innerHTML=`<div class="status ${cls}">${s.status}</div><div class="mini" style="margin-top:6px">${s.status==='VALID SETUP'?'Checklist passed using the values you entered. This is not a probability estimate.':s.status==='WAIT'?'Required values are missing. Complete them before interpreting the setup.':'One or more required conditions failed. Stand aside until a fresh setup forms.'}</div><div class="metrics"><div class="metric"><small>Risk / unit</small><strong>${money(s.risk)}</strong></div><div class="metric"><small>Approx. risk</small><strong>${money(riskAmt)}</strong></div><div class="metric"><small>1R target premium</small><strong>${money(target)}</strong></div></div><ul class="reasons">${(s.missing.length?s.missing.map(x=>'Missing: '+x):[]).concat(s.conflicts).concat(s.invalidRisk?['For a long option, stop-loss must be below entry premium']:[]).map(x=>`<li>${x}</li>`).join('')||'<li>All checklist conditions passed.</li>'}</ul>`;
+ if(s.entry!==null&&s.sl!==null){$('mEntry').value=s.entry;$('mSL').value=s.sl;$('mTarget').value=(s.entry+Math.abs(s.entry-s.sl)).toFixed(2);if(s.qty!==null)$('mQty').value=s.qty;$('mSide').value='BUY'}
+}
+$('validateBtn').addEventListener('click',validate);
+function record(type,details){const all=JSON.parse(localStorage.getItem('dtv-journal')||'[]');all.unshift({id:Date.now(),type,...details});localStorage.setItem('dtv-journal',JSON.stringify(all));renderJournal();alert('Saved on this device.')}
+$('saveSetup').addEventListener('click',()=>{if(!latestValidation)validate();record('Setup',latestValidation)});
+function monitor(){
+ const side=$('mSide').value,e=readNum('mEntry'),c=readNum('mCurrent'),sl=readNum('mSL'),t=readNum('mTarget'),q=readNum('mQty');
+ const missing=[['entry',e],['current premium',c],['stop-loss',sl],['target',t],['quantity',q]].filter(x=>x[1]===null).map(x=>x[0]);
+ const pnl=e!==null&&c!==null&&q!==null?(side==='BUY'?(c-e)*q:(e-c)*q):null;
+ const hitSL=e!==null&&c!==null&&sl!==null&&(side==='BUY'?c<=sl:c>=sl);
+ const hitT=e!==null&&c!==null&&t!==null&&(side==='BUY'?c>=t:c<=t);
+ const flags=[];if($('mInvalid').checked)flags.push('Underlying setup invalidated');if($('mVWAP').checked)flags.push('VWAP conflicts with trade');if($('mTime').checked)flags.push('Time-based exit rule reached');if(hitSL)flags.push('Option premium has reached/passed stop-loss');if(hitT)flags.push('Option premium has reached/passed target');
+ let status=missing.length?'WAIT — COMPLETE FIELDS':flags.length?'REVIEW / EXIT PLAN NOW': 'HOLD ONLY IF PLAN STILL VALID';
+ latestMonitor={side,e,c,sl,t,q,pnl,missing,flags,status,created:new Date().toISOString()};
+ const el=$('monitorResult');el.classList.remove('hidden');el.innerHTML=`<div class="status ${missing.length?'wait':flags.length?'no':'valid'}">${status}</div><div class="metrics"><div class="metric"><small>Unrealized P&amp;L*</small><strong>${money(pnl)}</strong></div><div class="metric"><small>SL premium</small><strong>${money(sl)}</strong></div><div class="metric"><small>Target premium</small><strong>${money(t)}</strong></div></div><ul class="reasons">${(missing.map(x=>'Missing: '+x).concat(flags)).map(x=>`<li>${x}</li>`).join('')||'<li>No alert flags entered. Continue to monitor manually.</li>'}</ul><div class="mini">*Before brokerage, taxes, slippage and other costs. This tool does not receive live prices or execute exits.</div>`;
+}
+$('monitorBtn').addEventListener('click',monitor);$('saveMonitor').addEventListener('click',()=>{if(!latestMonitor)monitor();record('Open trade review',latestMonitor)});
+function renderJournal(){
+ const a=JSON.parse(localStorage.getItem('dtv-journal')||'[]');$('jCount').textContent=a.length;
+ const pnl=a.filter(x=>x.type==='Closed trade'&&typeof x.pnl==='number').reduce((s,x)=>s+x.pnl,0);$('jPnl').textContent=money(pnl);
+ $('jViolations').textContent=a.filter(x=>x.type==='Rule violation').length;
+ $('journalList').innerHTML=a.length?a.map(x=>`<div class="trade"><div class="tradehead"><span>${x.type} · ${x.instrument||x.side||''}</span><span class="tag">${x.status||'Saved'}</span></div><p>${new Date(x.created||x.id).toLocaleString()}<br>${x.notes?String(x.notes).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'<br>':''}${x.pnl!==undefined?'P&amp;L: '+money(x.pnl)+'<br>':''}${x.conflicts?.length?'Checks: '+x.conflicts.join('; '):''}${x.flags?.length?'Alerts: '+x.flags.join('; '):''}</p></div>`).join(''):'<p class="muted">No records yet. Validate and save a setup or review an open trade.</p>';
+}
+$('exportBtn').addEventListener('click',()=>{const a=JSON.parse(localStorage.getItem('dtv-journal')||'[]');const cols=['id','type','created','instrument','side','status','entry','sl','qty','pnl','notes','conflicts','flags'];const esc=v=>'"'+String(Array.isArray(v)?v.join('; '):v??'').replace(/"/g,'""')+'"';const csv=[cols.join(','),...a.map(r=>cols.map(c=>esc(r[c])).join(','))].join('\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));const link=document.createElement('a');link.href=url;link.download='trade-journal.csv';link.click();URL.revokeObjectURL(url)});
+$('clearBtn').addEventListener('click',()=>{if(confirm('Delete all Daily Trade Validator records stored in this browser? This cannot be undone.')){localStorage.removeItem('dtv-journal');renderJournal()}});
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+renderJournal();
+</script></body></html>
