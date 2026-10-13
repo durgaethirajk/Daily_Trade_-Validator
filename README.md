@@ -22,7 +22,3 @@ Open `index.html` in a browser. Some PWA features only work when hosted on HTTPS
 
 ## Before real-money use
 Test with paper trades and historical examples. This is not a live feed, financial advice, a validated profitable strategy, or an order execution tool. The app cannot see your chart, verify screenshots, or guarantee stop execution. For live data, add a licensed market-data API through a secure backend; do not put broker/API secrets in client-side JavaScript.
-
-
-## Harmonic detector update
-Manual X/A/B/C/D ratio checker for Gartley, Bat, Butterfly and Crab patterns with configurable tolerance. This is not automatic pivot detection or a trade signal; confirm swing points and BOS/FVG/VWAP/candle-close rules manually.
