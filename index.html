@@ -26,6 +26,15 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}.preview{width:100%;m
 ul{padding-left:20px;margin:8px 0}li{margin:5px 0}.metric{background:#0b1423;border-radius:10px;padding:10px}.metric b{display:block;font-size:17px}
 footer{color:var(--muted);font-size:11px;text-align:center;padding:8px}
 @media(max-width:400px){body{padding-left:10px;padding-right:10px}.grid.three{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:12px}}
+
+.auto-chart-wrap{position:relative;width:100%;margin-top:10px;background:#08101d;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.auto-chart-wrap img{display:block;width:100%;height:auto}
+.auto-chart-wrap svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.auto-point{fill:#ffd166;stroke:#111827;stroke-width:2}
+.auto-line{fill:none;stroke:#ffd166;stroke-width:0.7;vector-effect:non-scaling-stroke}
+.auto-prz{fill:#ffca7026;stroke:#ffca70;stroke-width:0.5;stroke-dasharray:2 1}
+.auto-label{font-size:3.2px;font-weight:800;fill:#fff;paint-order:stroke;stroke:#111827;stroke-width:.7px;stroke-linejoin:round}
+
 </style>
 </head>
 <body>
@@ -59,6 +68,20 @@ footer{color:var(--muted);font-size:11px;text-align:center;padding:8px}
 </div><button class="btn secondary" id="riskBtn">Calculate option levels</button><div id="riskResult" class="small" style="margin-top:10px">Enter premium and stop-loss to calculate a target. This is a calculator, not a prediction.</div></div>
 </section>
 <section id="harmonics">
+<div class="card" id="autoHarmonicCard">
+<h2>Automatic screenshot pattern finder</h2>
+<p class="small">Upload a clear chart screenshot. The secure analysis service will inspect visible swings, propose X-A-B-C-D points, draw the pattern overlay, and return a cautious pattern assessment. It must be connected to your own deployed backend before automatic analysis works.</p>
+<div class="field"><label>Chart screenshot</label><input id="autoHarmonicFile" type="file" accept="image/png,image/jpeg,image/webp"><img id="autoHarmonicPreview" class="preview" alt="Uploaded chart preview"></div>
+<div class="grid">
+<div class="field"><label>Instrument</label><select id="autoHarmonicInstrument"><option>NIFTY</option><option>SENSEX</option><option>Other</option></select></div>
+<div class="field"><label>Chart timeframe</label><select id="autoHarmonicTimeframe"><option>5-minute</option><option>15-minute</option><option>3-minute</option><option>1-minute</option></select></div>
+</div>
+<div class="field"><label>Optional note (e.g. current price / visible swing)</label><input id="autoHarmonicNote" type="text" placeholder="Optional context; do not include account details"></div>
+<button class="btn" id="autoHarmonicAnalyze">Analyse screenshot and draw pattern</button>
+<div id="autoHarmonicStatus" class="result"><span class="pill">Backend not configured</span><p class="small">After you deploy the backend, set the API endpoint in the app configuration. Never put an API key in this GitHub Pages repository.</p></div>
+<div id="autoHarmonicOutput" class="result" style="display:none"></div>
+</div>
+
 <div class="card">
 <h2>Harmonic pattern checker</h2>
 <p class="small">Enter the five swing prices from your chart in chronological order: X → A → B → C → D. Values should be actual index/underlying prices, not option premiums. Pattern matching uses common approximate Fibonacci ranges; tolerance can be adjusted.</p>
@@ -146,5 +169,65 @@ $('saveJournal').addEventListener('click',()=>{const e=+$('jEntry').value,x=+$('
 $('exportJournal').addEventListener('click',()=>{if(!journal.length){alert('No journal rows to export.');return;}const keys=['date','instrument','side','entry','exit','qty','setup','pnl'];const csv=[keys.join(','),...journal.map(r=>keys.map(k=>'"'+String(r[k]).replaceAll('"','""')+'"').join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='daily-trade-journal.csv';a.click();URL.revokeObjectURL(a.href);});
 renderJournal();
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+
+// Automatic harmonic screenshot analysis. Requires a deployed secure backend endpoint.
+const HARMONIC_API_ENDPOINT = ''; // Set to your deployed backend URL, e.g. https://your-service.example/analyze
+let autoHarmonicImageUrl = '';
+$('autoHarmonicFile')?.addEventListener('change', e => {
+  const file=e.target.files?.[0]; if(!file)return;
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)){
+    $('autoHarmonicStatus').innerHTML='<span class="red">Use PNG, JPEG or WebP.</span>'; return;
+  }
+  if(file.size > 8*1024*1024){
+    $('autoHarmonicStatus').innerHTML='<span class="red">Image is too large. Please use a screenshot under 8 MB.</span>'; return;
+  }
+  if(autoHarmonicImageUrl)URL.revokeObjectURL(autoHarmonicImageUrl);
+  autoHarmonicImageUrl=URL.createObjectURL(file);
+  $('autoHarmonicPreview').src=autoHarmonicImageUrl;
+  $('autoHarmonicPreview').style.display='block';
+  $('autoHarmonicStatus').innerHTML='<span class="pill">Screenshot ready</span><p class="small">Tap Analyse screenshot and draw pattern. The backend must be configured for automatic analysis.</p>';
+  $('autoHarmonicOutput').style.display='none';
+});
+$('autoHarmonicAnalyze')?.addEventListener('click', async () => {
+  const file=$('autoHarmonicFile')?.files?.[0];
+  const status=$('autoHarmonicStatus'), output=$('autoHarmonicOutput');
+  if(!file){status.innerHTML='<span class="red">Upload a chart screenshot first.</span>';return;}
+  if(!HARMONIC_API_ENDPOINT){
+    status.innerHTML='<span class="amber">Backend not configured yet.</span><p>Automatic AI image analysis cannot run from GitHub Pages alone. Deploy the backend in the package and set HARMONIC_API_ENDPOINT to its HTTPS URL. Do not put your API key here.</p>';
+    return;
+  }
+  const fd=new FormData();
+  fd.append('image',file);
+  fd.append('instrument',$('autoHarmonicInstrument').value);
+  fd.append('timeframe',$('autoHarmonicTimeframe').value);
+  fd.append('note',$('autoHarmonicNote').value||'');
+  status.innerHTML='<span class="blue">Analysing screenshot…</span><p class="small">Please wait. This can take a few seconds.</p>';
+  try {
+    const response=await fetch(HARMONIC_API_ENDPOINT,{method:'POST',body:fd});
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||'Analysis request failed');
+    if(!data.points || !Array.isArray(data.points) || data.points.length<5)throw new Error('The service returned incomplete swing points.');
+    renderAutoHarmonicResult(data,file);
+    status.innerHTML='<span class="green">Analysis complete</span><p class="small">Review all points and price labels manually before using the result.</p>';
+  } catch(err) {
+    status.innerHTML='<span class="red">Could not analyse screenshot</span><p>'+escapeHtml(String(err.message||err))+'</p><p class="small">Check backend deployment, HTTPS URL and server logs.</p>';
+  }
+});
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderAutoHarmonicResult(data,file){
+  const output=$('autoHarmonicOutput');
+  const imgUrl=URL.createObjectURL(file);
+  const pts=data.points.slice(0,5);
+  // point coordinates are normalized to 0..1000 for x/y; the backend should return visible image pixel positions normalized.
+  const path=pts.map(p=>`${Number(p.x)/10},${Number(p.y)/10}`).join(' ');
+  const circles=pts.map((p,i)=>`<circle class="auto-point" cx="${Number(p.x)/10}" cy="${Number(p.y)/10}" r="1.3"/><text class="auto-label" x="${Number(p.x)/10+1.6}" y="${Number(p.y)/10-1.6}">${['X','A','B','C','D'][i]}${p.price!=null?' · '+escapeHtml(String(p.price)):''}</text>`).join('');
+  const pattern=escapeHtml(data.pattern||'Unconfirmed pattern');
+  const direction=escapeHtml(data.direction||'unclear');
+  const confidence=escapeHtml(data.confidence||'low');
+  const details=Array.isArray(data.notes)?data.notes.map(x=>'<li>'+escapeHtml(x)+'</li>').join(''):'';
+  output.style.display='block';
+  output.innerHTML=`<div class="signal blue">${pattern}</div><p><b>Direction:</b> ${direction} · <b>Visual confidence:</b> ${confidence}</p><div class="auto-chart-wrap"><img src="${imgUrl}" alt="Chart screenshot"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline class="auto-line" points="${path}"/>${circles}</svg></div><p><b>Potential reversal zone:</b> ${escapeHtml(data.prz||'Not reliably estimated')}</p><p><b>Setup:</b> ${escapeHtml(data.setup||'Wait for confirmation')}</p><p><b>Invalidation:</b> ${escapeHtml(data.invalidation||'Not reliably estimated')}</p><ul>${details}</ul><p class="small">Image-model estimates can be wrong, especially when the price scale or candle swings are unclear. Confirm the actual prices on Kite; this is not a trade instruction.</p>`;
+}
+
 </script>
 </body></html>
