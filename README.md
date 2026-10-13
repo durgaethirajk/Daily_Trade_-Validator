@@ -1,24 +1,18 @@
-# Daily Trade Validator — iPhone PWA MVP
+# Daily Trade Validator v2 — Harmonics + screenshot reference
 
-## What's included
-- Manual checklist for Nifty 50 and Sensex options
-- 5-minute opening-range breakout, BOS, FVG retracement, rejection candle and VWAP checks
-- Entry/stop-loss risk and 1R target calculation
-- Manual open-trade review using option premium and invalidation flags
-- Local-only journal and CSV export
-- PWA manifest and service worker for Home Screen installation/offline shell
+## Features
+- Validate CE candidate / PE candidate / NO TRADE from manually selected market context.
+- Harmonic ratio checker for Gartley, Bat, Butterfly and Crab using X-A-B-C-D swing prices.
+- Screenshot upload preview (reference only; no automatic OCR or chart recognition).
+- Long-option premium risk/target calculator, open-trade P&L check, local journal and CSV export.
+- Updated service-worker cache name (`dtv-v2-harmonics`) to help avoid old tab versions.
 
-## Important rule notes
-The first version is deliberately conservative and manual. The user must confirm BOS/FVG/retracement from their chart; it does not calculate these automatically. It uses the entered 9:15–10:15 opening-range high/low as a directional filter. A completed close above the range is required for CE; below is required for PE. VWAP must align. FVG zone overlap is a consistency check, not a proof of a valid FVG. The 1R target shown is entry premium + absolute entry-to-stop distance for a long option. Validate sizing/lot quantity and all exchange rules yourself.
+## Deploy to GitHub Pages
+1. Unzip this package on a computer or phone file manager.
+2. In your GitHub repository, replace `index.html`, `manifest.webmanifest`, `sw.js`, `icon-192.png`, and `icon-512.png` with these files. Upload the extracted files, not the ZIP.
+3. Commit the changes.
+4. On iPhone Safari, open the Pages website, refresh it, then if the old version persists remove the Home Screen icon and add it again after confirming Safari shows the new Harmonics tab.
 
-## Run locally for testing
-Open `index.html` in a browser. Some PWA features only work when hosted on HTTPS or localhost.
-
-## Install on iPhone
-1. Host the contents of this folder on an HTTPS static host (for example, a private GitHub Pages site or another static web host).
-2. Open the HTTPS URL in Safari on your iPhone.
-3. Tap Share → Add to Home Screen → Add.
-4. Launch from the Home Screen. Data is stored in Safari's local storage on that device; export CSV backups regularly.
-
-## Before real-money use
-Test with paper trades and historical examples. This is not a live feed, financial advice, a validated profitable strategy, or an order execution tool. The app cannot see your chart, verify screenshots, or guarantee stop execution. For live data, add a licensed market-data API through a secure backend; do not put broker/API secrets in client-side JavaScript.
+## Important limitations
+This version does not connect to Zerodha Kite, read live candles, interpret screenshots automatically, or place orders. GitHub Pages is static hosting; do not place API keys or secrets in its files. A later live-data version would need an authorised backend and a review of Kite Connect's current terms.
+The CE/PE result is a rules checklist, not a prediction or financial advice. A harmonic ratio match alone is not a buy signal.

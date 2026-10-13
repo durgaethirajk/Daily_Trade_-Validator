@@ -1,11 +1,10 @@
 {
   "name": "Daily Trade Validator",
   "short_name": "Trade Validator",
-  "description": "Manual checklist and journal for Nifty and Sensex options",
-  "start_url": "./",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0b1119",
-  "theme_color": "#101722",
+  "background_color": "#0b1220",
+  "theme_color": "#101827",
   "icons": [
     {
       "src": "icon-192.png",
